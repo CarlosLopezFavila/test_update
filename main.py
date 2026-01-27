@@ -36,6 +36,7 @@ def main(page: ft.Page):
     page.title = "Interfaz básica con Flet"
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
+    page.bgcolor = ft.Colors.RED_100
 
     check_version()
 
