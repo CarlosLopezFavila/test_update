@@ -22,6 +22,8 @@ if not tags:
 # 2️⃣ Ordenar por versión semántica y tomar el último
 latest = max(tags, key=lambda t: version.parse(t["name"].lstrip("v")))
 tag_name = latest["name"]
+print(type(tag_name))
+print(tag_name)
 commit_sha = latest["commit"]["sha"]
 
 # 3️⃣ Obtener info del commit
@@ -29,7 +31,7 @@ commit_url = f"https://api.github.com/repos/{OWNER}/{REPO}/commits/{commit_sha}"
 commit_resp = requests.get(commit_url, headers=headers)
 commit_resp.raise_for_status()
 commit = commit_resp.json()
-
+"""
 print("🏷️ Último tag publicado")
 print(f"Tag: {tag_name}")
 print(f"Commit SHA: {commit_sha}")
@@ -37,4 +39,4 @@ print(f"Autor: {commit['commit']['author']['name']}")
 print(f"Email: {commit['commit']['author']['email']}")
 print(f"Fecha: {commit['commit']['author']['date']}")
 print(f"Mensaje: {commit['commit']['message']}")
-print(f"URL: {commit['html_url']}")
+print(f"URL: {commit['html_url']}")"""
