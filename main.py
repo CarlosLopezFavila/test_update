@@ -1,8 +1,39 @@
 import flet as ft
-import requests
+import requests, os
 from pathlib import Path
 import zipfile as zf
-from get_tag_info import tag_name as remote_version, OWNER, REPO, GITHUB_TOKEN
+from packaging import version
+
+
+OWNER = "CarlosLopezFavila"
+REPO = "test_update"
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+
+# ===================OBTIENE INFO DE ULTIMO RELEASE  ==========================
+global headers
+headers = {}
+if GITHUB_TOKEN:
+    headers["Authorization"] = f"token {GITHUB_TOKEN}"
+
+# 1️⃣ Obtener todos los tags
+tags_url = f"https://api.github.com/repos/{OWNER}/{REPO}/tags"
+tags_resp = requests.get(tags_url, headers=headers)
+tags_resp.raise_for_status()
+tags = tags_resp.json()
+
+if not tags:
+    raise RuntimeError("No hay tags en el repositorio")
+
+# 2️⃣ Ordenar por versión semántica y tomar el último
+latest = max(tags, key=lambda t: version.parse(t["name"].lstrip("v")))
+remote_version = latest["name"]
+commit_sha = latest["commit"]["sha"]
+
+# 3️⃣ Obtener info del commit
+commit_url = f"https://api.github.com/repos/{OWNER}/{REPO}/commits/{commit_sha}"
+commit_resp = requests.get(commit_url, headers=headers)
+commit_resp.raise_for_status()
+commit = commit_resp.json()
 
 
 global actual_version 
@@ -15,9 +46,7 @@ def check_version():
         number_remote_version = remote_version[1:]
         number_local_version = actual_version[1:]
         if number_local_version < number_remote_version:
-            headers = {}
-            if GITHUB_TOKEN:
-                headers["Authorization"] = f"token {GITHUB_TOKEN}"
+            
 
             print("Es necesario decargar la ultima actualización")
             # 4️⃣ Descargar el zip del último tag
