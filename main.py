@@ -6,55 +6,41 @@ from packaging import version
 
 
 OWNER = "CarlosLopezFavila"
-REPO = "test_update"
+REPO = "test_update_exe"
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 # ===================OBTIENE INFO DE ULTIMO RELEASE  ==========================
 global headers
-headers = {}
-if GITHUB_TOKEN:
-    headers["Authorization"] = f"token {GITHUB_TOKEN}"
+headers = {
+    "Authorization": f"Bearer {GITHUB_TOKEN}",
+    "Accept": "application/vnd.github+json",
+}
 
-# 1️⃣ Obtener todos los tags
-tags_url = f"https://api.github.com/repos/{OWNER}/{REPO}/tags"
-tags_resp = requests.get(tags_url, headers=headers)
-tags_resp.raise_for_status()
-tags = tags_resp.json()
+# Obtener último release
+release_url = f"https://api.github.com/repos/{OWNER}/{REPO}/releases/latest"
+release_resp = requests.get(release_url, headers=headers)
+release_resp.raise_for_status()
+release = release_resp.json()
 
-if not tags:
-    raise RuntimeError("No hay tags en el repositorio")
-
-# 2️⃣ Ordenar por versión semántica y tomar el último
-latest = max(tags, key=lambda t: version.parse(t["name"].lstrip("v")))
-remote_version = latest["name"]
-commit_sha = latest["commit"]["sha"]
-
-# 3️⃣ Obtener info del commit
-commit_url = f"https://api.github.com/repos/{OWNER}/{REPO}/commits/{commit_sha}"
-commit_resp = requests.get(commit_url, headers=headers)
-commit_resp.raise_for_status()
-commit = commit_resp.json()
+remote_version = release["tag_name"]
+zip_url = release["zipball_url"]
 
 
 global actual_version 
-actual_version = "v1.0.3"
+actual_version = "v0.0.0"
 
 
 def check_version():
     if actual_version != remote_version:
         print("Diferentes Versiones")
-        number_remote_version = remote_version[1:]
-        number_local_version = actual_version[1:]
-        if number_local_version < number_remote_version:
-            
+        if version.parse(actual_version) < version.parse(remote_version):
 
             print("Es necesario decargar la ultima actualización")
             # 4️⃣ Descargar el zip del último tag
-            zip_url = f"https://github.com/{OWNER}/{REPO}/archive/refs/tags/{remote_version}.zip"
             print(f"Descargando {zip_url} ...")
-
             response = requests.get(zip_url, headers=headers)
             response.raise_for_status()
+
 
             zip_filename = f"{REPO}-{remote_version}.zip"
             with open(zip_filename, "wb") as f:
@@ -122,3 +108,4 @@ def main(page: ft.Page):
 
 # 👉 NUEVA forma correcta
 ft.run(main)
+

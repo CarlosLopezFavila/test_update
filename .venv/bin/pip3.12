@@ -1,4 +1,6 @@
-#!/home/glory/BlueFox/.venv/bin/python3
+#!/bin/sh
+'''exec' "/home/ubuntu/Desktop/test update/test_update/.venv/bin/python3" "$0" "$@"
+' '''
 # -*- coding: utf-8 -*-
 import re
 import sys
