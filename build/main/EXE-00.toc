@@ -138,42 +138,42 @@
    '/home/ubuntu/Desktop/test '
    'update/test_update/.venv/lib/python3.12/site-packages/msgpack/_cmsgpack.cpython-312-aarch64-linux-gnu.so',
    'EXTENSION'),
-  ('libz.so.1', '/lib/aarch64-linux-gnu/libz.so.1', 'BINARY'),
   ('libexpat.so.1', '/lib/aarch64-linux-gnu/libexpat.so.1', 'BINARY'),
+  ('libz.so.1', '/lib/aarch64-linux-gnu/libz.so.1', 'BINARY'),
   ('liblzma.so.5', '/lib/aarch64-linux-gnu/liblzma.so.5', 'BINARY'),
   ('libbz2.so.1.0', '/lib/aarch64-linux-gnu/libbz2.so.1.0', 'BINARY'),
   ('libcrypto.so.3', '/lib/aarch64-linux-gnu/libcrypto.so.3', 'BINARY'),
   ('libffi.so.8', '/lib/aarch64-linux-gnu/libffi.so.8', 'BINARY'),
   ('libssl.so.3', '/lib/aarch64-linux-gnu/libssl.so.3', 'BINARY'),
-  ('libreadline.so.8', '/lib/aarch64-linux-gnu/libreadline.so.8', 'BINARY'),
   ('libtinfo.so.6', '/lib/aarch64-linux-gnu/libtinfo.so.6', 'BINARY'),
-  ('setuptools/_vendor/importlib_metadata-8.7.1.dist-info/RECORD',
+  ('libreadline.so.8', '/lib/aarch64-linux-gnu/libreadline.so.8', 'BINARY'),
+  ('setuptools/_vendor/importlib_metadata-8.7.1.dist-info/REQUESTED',
    '/home/ubuntu/Desktop/test '
-   'update/test_update/.venv/lib/python3.12/site-packages/setuptools/_vendor/importlib_metadata-8.7.1.dist-info/RECORD',
-   'DATA'),
-  ('setuptools/_vendor/importlib_metadata-8.7.1.dist-info/WHEEL',
-   '/home/ubuntu/Desktop/test '
-   'update/test_update/.venv/lib/python3.12/site-packages/setuptools/_vendor/importlib_metadata-8.7.1.dist-info/WHEEL',
+   'update/test_update/.venv/lib/python3.12/site-packages/setuptools/_vendor/importlib_metadata-8.7.1.dist-info/REQUESTED',
    'DATA'),
   ('setuptools/_vendor/importlib_metadata-8.7.1.dist-info/METADATA',
    '/home/ubuntu/Desktop/test '
    'update/test_update/.venv/lib/python3.12/site-packages/setuptools/_vendor/importlib_metadata-8.7.1.dist-info/METADATA',
    'DATA'),
-  ('setuptools/_vendor/importlib_metadata-8.7.1.dist-info/top_level.txt',
+  ('setuptools/_vendor/importlib_metadata-8.7.1.dist-info/INSTALLER',
    '/home/ubuntu/Desktop/test '
-   'update/test_update/.venv/lib/python3.12/site-packages/setuptools/_vendor/importlib_metadata-8.7.1.dist-info/top_level.txt',
+   'update/test_update/.venv/lib/python3.12/site-packages/setuptools/_vendor/importlib_metadata-8.7.1.dist-info/INSTALLER',
+   'DATA'),
+  ('setuptools/_vendor/importlib_metadata-8.7.1.dist-info/RECORD',
+   '/home/ubuntu/Desktop/test '
+   'update/test_update/.venv/lib/python3.12/site-packages/setuptools/_vendor/importlib_metadata-8.7.1.dist-info/RECORD',
    'DATA'),
   ('setuptools/_vendor/importlib_metadata-8.7.1.dist-info/licenses/LICENSE',
    '/home/ubuntu/Desktop/test '
    'update/test_update/.venv/lib/python3.12/site-packages/setuptools/_vendor/importlib_metadata-8.7.1.dist-info/licenses/LICENSE',
    'DATA'),
-  ('setuptools/_vendor/importlib_metadata-8.7.1.dist-info/REQUESTED',
+  ('setuptools/_vendor/importlib_metadata-8.7.1.dist-info/top_level.txt',
    '/home/ubuntu/Desktop/test '
-   'update/test_update/.venv/lib/python3.12/site-packages/setuptools/_vendor/importlib_metadata-8.7.1.dist-info/REQUESTED',
+   'update/test_update/.venv/lib/python3.12/site-packages/setuptools/_vendor/importlib_metadata-8.7.1.dist-info/top_level.txt',
    'DATA'),
-  ('setuptools/_vendor/importlib_metadata-8.7.1.dist-info/INSTALLER',
+  ('setuptools/_vendor/importlib_metadata-8.7.1.dist-info/WHEEL',
    '/home/ubuntu/Desktop/test '
-   'update/test_update/.venv/lib/python3.12/site-packages/setuptools/_vendor/importlib_metadata-8.7.1.dist-info/INSTALLER',
+   'update/test_update/.venv/lib/python3.12/site-packages/setuptools/_vendor/importlib_metadata-8.7.1.dist-info/WHEEL',
    'DATA'),
   ('setuptools/_vendor/jaraco/text/Lorem ipsum.txt',
    '/home/ubuntu/Desktop/test '
@@ -194,7 +194,7 @@
  [],
  False,
  False,
- 1770243882,
+ 1770244750,
  [('run',
    '/home/ubuntu/Desktop/test '
    'update/test_update/.venv/lib/python3.12/site-packages/PyInstaller/bootloader/Linux-64bit-arm/run',
