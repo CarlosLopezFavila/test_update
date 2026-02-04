@@ -1,5 +1,9 @@
 import flet as ft
-import requests, os
+import requests
+import os
+import sys
+import tempfile
+import subprocess
 from pathlib import Path
 import zipfile as zf
 from packaging import version
@@ -8,81 +12,135 @@ from packaging import version
 OWNER = "CarlosLopezFavila"
 REPO = "test_update_exe"
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-
-# ===================OBTIENE INFO DE ULTIMO RELEASE  ==========================
-global headers
-headers = {
-    "Authorization": f"Bearer {GITHUB_TOKEN}",
-    "Accept": "application/vnd.github+json",
-}
-
-# Obtener último release
-release_url = f"https://api.github.com/repos/{OWNER}/{REPO}/releases/latest"
-release_resp = requests.get(release_url, headers=headers)
-release_resp.raise_for_status()
-release = release_resp.json()
-
-remote_version = release["tag_name"]
-zip_url = release["zipball_url"]
-
-
-global actual_version 
 actual_version = "v0.0.0"
+
+headers = {}
+if GITHUB_TOKEN:
+    headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"
+headers["Accept"] = "application/vnd.github+json"
+
+
+def get_app_dir():
+    """Directorio de la aplicación (donde está main o main.py)."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).parent.resolve()
+    return Path(__file__).parent.resolve()
+
+
+def get_updater_cmd(app_dir: Path, staging_content_root: str):
+    """Comando para ejecutar el updater (script o ejecutable)."""
+    if getattr(sys, "frozen", False):
+        updater_exe = app_dir / "updater"
+        return [str(updater_exe), staging_content_root, str(app_dir)]
+    updater_script = app_dir / "updater.py"
+    return [sys.executable, str(updater_script), staging_content_root, str(app_dir)]
 
 
 def check_version():
-    if actual_version != remote_version:
-        print("Diferentes Versiones")
-        if version.parse(actual_version) < version.parse(remote_version):
+    """
+    Comprueba si hay una versión más reciente en GitHub.
+    Si la hay: descarga el zip a un directorio temporal, descomprime
+    y devuelve la ruta al contenido (carpeta con main, etc.) para el updater.
+    Si no hay actualización, devuelve None.
+    """
+    try:
+        release_url = f"https://api.github.com/repos/{OWNER}/{REPO}/releases/latest"
+        release_resp = requests.get(release_url, headers=headers, timeout=15)
+        release_resp.raise_for_status()
+        release = release_resp.json()
+    except Exception as e:
+        print(f"No se pudo comprobar la versión: {e}")
+        return None
 
-            print("Es necesario decargar la ultima actualización")
-            # 4️⃣ Descargar el zip del último tag
-            print(f"Descargando {zip_url} ...")
-            response = requests.get(zip_url, headers=headers)
-            response.raise_for_status()
+    remote_version = release["tag_name"]
+    zip_url = release["zipball_url"]
+
+    if actual_version == remote_version:
+        print("Versiones iguales, no hay actualización.")
+        return None
+    if version.parse(actual_version) >= version.parse(remote_version):
+        return None
+
+    print("Hay una actualización disponible:", remote_version)
+    staging_base = Path(tempfile.mkdtemp(prefix=f"{REPO}_update_"))
+
+    # Opción 1: Si el release tiene assets "main" (y opcionalmente "updater"), usarlos
+    # (recomendado para Raspberry Pi: sube los binarios compilados como assets del release)
+    assets = release.get("assets") or []
+    main_asset = next((a for a in assets if a.get("name") == "main"), None)
+    if main_asset:
+        print("Descargando ejecutable desde assets...")
+        try:
+            r = requests.get(main_asset["browser_download_url"], headers=headers, timeout=120)
+            r.raise_for_status()
+            (staging_base / "main").write_bytes(r.content)
+            os.chmod(staging_base / "main", 0o755)
+        except Exception as e:
+            print(f"Error al descargar main: {e}")
+            return None
+        updater_asset = next((a for a in assets if a.get("name") == "updater"), None)
+        if updater_asset:
+            try:
+                r = requests.get(updater_asset["browser_download_url"], headers=headers, timeout=60)
+                r.raise_for_status()
+                (staging_base / "updater").write_bytes(r.content)
+                os.chmod(staging_base / "updater", 0o755)
+            except Exception as e:
+                print(f"Advertencia: no se pudo descargar updater: {e}")
+        print("Descarga lista.")
+        return str(staging_base.resolve())
+
+    # Opción 2: Descargar zipball (código fuente; debe incluir "main" y "updater" si son binarios)
+    print(f"Descargando {zip_url} ...")
+    try:
+        response = requests.get(zip_url, headers=headers, timeout=60)
+        response.raise_for_status()
+    except Exception as e:
+        print(f"Error al descargar: {e}")
+        return None
+
+    zip_path = staging_base / f"{REPO}-{remote_version}.zip"
+    try:
+        zip_path.write_bytes(response.content)
+    except Exception as e:
+        print(f"Error al guardar zip: {e}")
+        return None
+
+    with zf.ZipFile(zip_path, "r") as zip_ref:
+        zip_ref.extractall(staging_base)
+
+    subdirs = [d for d in staging_base.iterdir() if d.is_dir()]
+    if not subdirs:
+        print("Error: el zip no contiene una carpeta raíz.")
+        return None
+    content_root = str(subdirs[0].resolve())
+    print("Archivos descomprimidos en:", content_root)
+    return content_root
 
 
-            zip_filename = f"{REPO}-{remote_version}.zip"
-            with open(zip_filename, "wb") as f:
-                f.write(response.content)
-
-            print(f"Archivo descargado: {zip_filename}")
-
-            base_path = Path(__file__).parent
-
-            with zf.ZipFile(zip_filename, "r") as zip_ref:
-                for member in zip_ref.infolist():
-                    member_path = Path(member.filename)
-
-                    # Ignorar la carpeta raíz (test_update-1.0.1/)
-                    if len(member_path.parts) <= 1:
-                        continue
-
-                    # Quitar la carpeta raíz
-                    relative_path = Path(*member_path.parts[1:])
-                    target_path = base_path / relative_path
-
-                    if member.is_dir():
-                        target_path.mkdir(parents=True, exist_ok=True)
-                    else:
-                        target_path.parent.mkdir(parents=True, exist_ok=True)
-                        with zip_ref.open(member) as source, open(target_path, "wb") as target:
-                            target.write(source.read())
-
-            print("Archivos descomprimidos")            
-            
-
-    else:
-        print("versiones iguales")
-
-
-def main(page: ft.Page):
+async def main(page: ft.Page):
     page.title = "Interfaz básica con Flet"
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.bgcolor = ft.Colors.RED_100
 
-    check_version()
+    app_dir = get_app_dir()
+    staging_content_root = check_version()
+
+    if staging_content_root:
+        # Hay actualización descargada: lanzar updater y cerrar esta instancia
+        updater_cmd = get_updater_cmd(app_dir, staging_content_root)
+        try:
+            subprocess.Popen(
+                updater_cmd,
+                cwd=str(app_dir),
+                start_new_session=True,
+            )
+        except Exception as e:
+            print(f"Error al lanzar el updater: {e}")
+        await page.window.close()
+        os._exit(0)  # Salida directa: no lanza excepción en la tarea de Flet
+        return
 
     texto = ft.Text(
         "Hola 👋 Esta es una interfaz básica con Flet",
